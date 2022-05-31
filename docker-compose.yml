@@ -1,39 +1,47 @@
 version: '3'
 services:
-  fluentd-stack-easy-ver0.0.10-nginx_d:
-    image: nginx:1.10
+  # fluentd-stack-easy-ver0.0.12-nginx_d:
+  #   build: "${PWD}/nginx_d/"
+  #   image: nginx:1.10
+  #   ports:
+  #     # ホスト:コンテナ
+  #     - "8080:80"
+  #   container_name: fluentd-stack-easy-ver0.0.12-nginx_d
+  #   volumes:
+  #     - ./nginx_d/log:/var/log/nginx
+  #   logging:
+  #     driver: "fluentd"
+  #     options:
+  #       fluentd-address: "localhost:24222"
+  #       tag: "nginx.{{.Name}}"
+  #       fluentd-async-connect: "true"
+
+  fluentd-stack-easy-ver0.0.12-app_d:
+    build: "${PWD}/app_d/"
     ports:
       # ホスト:コンテナ
-      - "8080:80"
-    container_name: fluentd-stack-easy-ver0.0.10-nginx_d
+      - "8080:8000"
+    container_name: fluentd-stack-easy-ver0.0.12-app_d
     volumes:
-      - ./nginx_d:/var/log/nginx
+      - ${PWD}/app_d/api:/usr/src/server
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: "localhost:24222"
+        tag: "app.{{.Name}}"
+        fluentd-async-connect: "true"
     
-  fluentd-stack-easy-ver0.0.10-fluent_d:
+  fluentd-stack-easy-ver0.0.12-fluent_d:
     image: fluent/fluentd:latest
     # build: ./fluent_d/
     restart: always
-    container_name: fluentd-stack-easy-ver0.0.10-fluent_d
+    container_name: fluentd-stack-easy-ver0.0.12-fluent_d
     command: >
       /usr/bin/fluentd -c /fluentd/etc/fluent.conf -v
     volumes:
-      - ${PWD}/fluent_d/tmp/etc/fluent.conf:/fluentd/etc/fluent.conf
+      - ${PWD}/fluent_d/config/fluent.conf:/fluentd/etc/fluent.conf
       - ${PWD}/fluent_d/log:/fluentd/log
-      - ${PWD}/nginx_d:/var/log/nginx
     ports:
       - "24222:24224"
-    depends_on:
-      - fluentd-stack-easy-ver0.0.10-fluent_a
+
   
-  fluentd-stack-easy-ver0.0.10-fluent_a:
-    image: fluent/fluentd:latest
-    # build: ./fluent_a/
-    restart: always
-    container_name: fluentd-stack-easy-ver0.0.10-fluent_a
-    command: >
-      /usr/bin/fluentd -c /fluentd/etc/fluent.conf -v
-    volumes:
-      - ${PWD}/fluent_a/tmp/etc/fluent.conf:/fluentd/etc/fluent.conf
-      - ${PWD}/fluent_a/log:/fluentd/log
-    ports:
-      - "24285:24285"
